@@ -1,8 +1,10 @@
 package main
 
 import (
+	"gopkg.in/telebot.v3/middleware"
 	"log"
 	"os"
+	"sams_helper/iternal/side_methods"
 	"strings"
 	"time"
 
@@ -20,11 +22,16 @@ func main() {
 		log.Fatal(err)
 		return
 	}
+	b.Use(middleware.Logger())
 
 	b.Handle(tele.OnText, handleCustom)
+	b.Handle("праздник", holidays)
+	b.Handle("курс", currencyAll)
 
 	b.Start()
 }
+
+//TODO Сделать слой транспорта
 
 func handleCustom(c tele.Context) error {
 
@@ -36,4 +43,14 @@ func handleCustom(c tele.Context) error {
 		return c.Send("принял")
 	}
 	return c.Send("не принял")
+}
+
+func holidays(c tele.Context) error {
+	response := side_methods.GetListOfHolidays()
+	return c.Send(response)
+}
+
+func currencyAll(c tele.Context) error {
+	response := side_methods.GetCurrentCurrencyUSD() + "\n" + side_methods.GetAliCurrency()
+	return c.Send(response)
 }
