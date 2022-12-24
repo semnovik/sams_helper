@@ -5,6 +5,7 @@ import (
 	"gopkg.in/telebot.v3/middleware"
 	"log"
 	"os"
+	"sams_helper/helpers"
 	"sams_helper/iternal/side_methods"
 	"sams_helper/scrap"
 	"strings"
@@ -50,14 +51,17 @@ func handleCustom(c tele.Context) error {
 }
 
 func holidays(c tele.Context) error {
-	response := side_methods.GetListOfHolidays()
+	response, err := side_methods.GetListOfHolidays()
+	if err != nil {
+		return helpers.SendErrorOnBackend(c, err)
+	}
 	return c.Send(response)
 }
 
 func currencyAll(c tele.Context) error {
 	response, err := side_methods.AllCurrencies()
 	if err != nil {
-		return c.Send("что-то пошло не так")
+		return helpers.SendErrorOnBackend(c, err)
 	}
 	return c.Send(response)
 }

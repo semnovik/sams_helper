@@ -3,29 +3,28 @@ package side_methods
 import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"log"
 	"net/http"
 	"strings"
 )
 
 //TODO Отредактировать
 
-func GetListOfHolidays() string {
+func GetListOfHolidays() (string, error) {
 	response, err := http.Get("https://calend.online/holiday/")
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
-	Body := response.Body
 
-	doc, err := goquery.NewDocumentFromReader(Body)
+	readerWeather, err := goquery.NewDocumentFromReader(response.Body)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
+	defer response.Body.Close()
 
-	table := doc.Find(".holidays-list")
+	table := readerWeather.Find(".holidays-list")
 	header, err := table.Prev().Html()
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	holiday := table.Children()
@@ -39,5 +38,5 @@ func GetListOfHolidays() string {
 	}
 	holidays := strings.Join(listFinal, "\n")
 
-	return fmt.Sprintf(header + "\n\n" + holidays)
+	return fmt.Sprintf(header + "\n\n" + holidays), nil
 }
