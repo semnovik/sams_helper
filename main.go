@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"gopkg.in/telebot.v3/middleware"
 	"log"
 	"os"
 	"sams_helper/iternal/side_methods"
+	"sams_helper/scrap"
 	"strings"
 	"time"
 
@@ -28,10 +30,12 @@ func main() {
 	b.Handle("праздник", holidays)
 	b.Handle("курс", currencyAll)
 
+	b.Handle("тест", test)
+
 	b.Start()
 }
 
-//TODO Сделать слой транспорта
+//TODO Сделать нормально
 
 func handleCustom(c tele.Context) error {
 
@@ -51,6 +55,20 @@ func holidays(c tele.Context) error {
 }
 
 func currencyAll(c tele.Context) error {
-	response := side_methods.GetCurrentCurrencyUSD() + "\n" + side_methods.GetAliCurrency()
+	response, err := side_methods.AllCurrencies()
+	if err != nil {
+		return c.Send("что-то пошло не так")
+	}
 	return c.Send(response)
+}
+
+func test(c tele.Context) error {
+	usd, err := scrap.StealUSD("https://quote.rbc.ru/ticker/59111")
+	kzt, err := scrap.StealKZT("https://www.google.com/finance/quote/RUB-KZT")
+	euro, err := scrap.StealEuro("https://quote.rbc.ru/ticker/59090")
+	ali, err := scrap.StealAli("https://alicoup.ru/currency/")
+	if err != nil {
+		return c.Send(err)
+	}
+	return c.Send(fmt.Sprintf("%.3f\n%.3f\n%.3f\n%v\n%.3f", usd, kzt, euro, err, ali))
 }
