@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"sams_helper/helpers/chats"
 	"sams_helper/iternal/handler"
 	"sams_helper/iternal/service"
 	"time"
@@ -25,6 +26,11 @@ func main() {
 	srv := service.NewService("sema_help_me_pls")
 	handler.InitHandlers(b, srv)
 
+	channels := []int64{chats.AdminChat, chats.SquadChat}
+	for _, v := range channels {
+		res := &tele.Chat{ID: v}
+		b.Send(res, "🚀Бот был запущен🚀")
+	}
 	b.Start()
 }
 

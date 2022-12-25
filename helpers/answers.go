@@ -10,7 +10,14 @@ func SquadRoarMsg(c tele.Context) string {
 }
 
 func HoneyMsg(c tele.Context) string {
-	return fmt.Sprintf("%v тебя любит💕", c.Sender().FirstName)
+	var name string
+	switch c.Sender().FirstName {
+	case "Sema":
+		name = "Сёма"
+	case "Alia":
+		name = "Алия"
+	}
+	return fmt.Sprintf("%v тебя любит💕", name)
 }
 
 func HoneyDone() string {
