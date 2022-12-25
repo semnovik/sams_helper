@@ -4,8 +4,10 @@ import (
 	"fmt"
 	tele "gopkg.in/telebot.v3"
 	"sams_helper/helpers"
+	"sams_helper/helpers/buttons"
 	"sams_helper/iternal/side_methods"
 	"sams_helper/scrap"
+	"strings"
 )
 
 type Service struct {
@@ -44,33 +46,48 @@ func (s Service) Test(c tele.Context) error {
 }
 
 func (s Service) InlineCall(c tele.Context) error {
-	return c.Send("че надо", &tele.ReplyMarkup{
-		InlineKeyboard: [][]tele.InlineButton{{{
-			Text: "Праздник сегодня",
-			Data: "holiday",
-		},
-			{
-				Text: "Курсы валют",
-				Data: "currency",
-			},
-		}},
-	})
+	selector := buttons.NewInlineSelector()
+
+	switch c.Message().Chat.ID {
+	case -1001268955342:
+		selector.Markup.Inline(
+			selector.Markup.Row(selector.HolidaysBtn(), selector.CurrencyBtn()),
+			selector.Markup.Row(selector.SquadCallBtn()),
+		)
+	default:
+		selector.Markup.Inline(
+			selector.Markup.Row(selector.HolidaysBtn(), selector.CurrencyBtn()),
+		)
+	}
+
+	return c.Send(fmt.Sprintf("%v, что тебе от меня надо?", c.Sender().FirstName), selector.Markup)
 }
 
 func (s Service) HandleCallback(c tele.Context) error {
-	switch c.Callback().Data {
-	case "holiday":
+	str := c.Callback().Data
+	switch {
+	case strings.Contains(str, "holiday"):
+		c.Send(fmt.Sprintf("%v хочет посмотреть праздники", c.Sender().FirstName))
+
 		holidays, err := side_methods.GetListOfHolidays()
 		if err != nil {
 			helpers.SendErrorOnBackend(c, err)
 		}
 		return c.Send(holidays)
-	case "currency":
+	case strings.Contains(str, "currency"):
+		c.Send(fmt.Sprintf("%v хочет узнать курс валют", c.Sender().FirstName))
+
 		currency, err := side_methods.AllCurrencies()
 		if err != nil {
 			helpers.SendErrorOnBackend(c, err)
 		}
 		return c.Send(currency)
+
+	case strings.Contains(str, "squad call"):
+		return c.Send(helpers.SquadRoar(c))
+
+		//case strings.Contains(str, "data"):
+		//	return c.Send("test")
 	}
 	return nil
 }
