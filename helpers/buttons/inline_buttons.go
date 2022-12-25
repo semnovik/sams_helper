@@ -11,13 +11,17 @@ func NewInlineSelector() InlineSelector {
 }
 
 func (i InlineSelector) HolidaysBtn() tele.Btn {
-	return i.Markup.Data("Праздник сегодня", "holiday")
+	return i.Markup.Data("🎉Праздник сегодня", "holiday")
 }
 
 func (i InlineSelector) CurrencyBtn() tele.Btn {
-	return i.Markup.Data("Курсы валют", "currency")
+	return i.Markup.Data("💵Курсы валют", "currency")
 }
 
 func (i InlineSelector) SquadCallBtn() tele.Btn {
-	return i.Markup.Data("Созвать сквад", "squad call")
+	return i.Markup.Data("🆘Созвать сквад🆘", "squad call")
+}
+
+func (i InlineSelector) LoveBtn() tele.Btn {
+	return i.Markup.Data("💌Отправить милость", "honey")
 }

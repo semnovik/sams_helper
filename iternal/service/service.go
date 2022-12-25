@@ -5,6 +5,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 	"sams_helper/helpers"
 	"sams_helper/helpers/buttons"
+	"sams_helper/helpers/chats"
 	"sams_helper/iternal/side_methods"
 	"sams_helper/scrap"
 	"strings"
@@ -48,15 +49,20 @@ func (s Service) Test(c tele.Context) error {
 func (s Service) InlineCall(c tele.Context) error {
 	selector := buttons.NewInlineSelector()
 
+	selector.Markup.Inline(
+		selector.Markup.Row(selector.HolidaysBtn(), selector.CurrencyBtn()),
+	)
+
 	switch c.Message().Chat.ID {
-	case -1001268955342:
+	case chats.SquadChat:
 		selector.Markup.Inline(
 			selector.Markup.Row(selector.HolidaysBtn(), selector.CurrencyBtn()),
 			selector.Markup.Row(selector.SquadCallBtn()),
 		)
-	default:
+	case chats.AdminChat, chats.AliyaChat:
 		selector.Markup.Inline(
 			selector.Markup.Row(selector.HolidaysBtn(), selector.CurrencyBtn()),
+			selector.Markup.Row(selector.LoveBtn()),
 		)
 	}
 
@@ -65,6 +71,7 @@ func (s Service) InlineCall(c tele.Context) error {
 
 func (s Service) HandleCallback(c tele.Context) error {
 	str := c.Callback().Data
+
 	switch {
 	case strings.Contains(str, "holiday"):
 		c.Send(fmt.Sprintf("%v хочет посмотреть праздники", c.Sender().FirstName))
@@ -74,6 +81,7 @@ func (s Service) HandleCallback(c tele.Context) error {
 			helpers.SendErrorOnBackend(c, err)
 		}
 		return c.Send(holidays)
+
 	case strings.Contains(str, "currency"):
 		c.Send(fmt.Sprintf("%v хочет узнать курс валют", c.Sender().FirstName))
 
@@ -84,10 +92,45 @@ func (s Service) HandleCallback(c tele.Context) error {
 		return c.Send(currency)
 
 	case strings.Contains(str, "squad call"):
-		return c.Send(helpers.SquadRoar(c))
+		photo := &tele.Photo{
+			File: tele.File{FileURL: "https://i.pinimg.com/originals/8a/8b/50/8a8b50da2bc4afa933718061fe291520.jpg"},
+		}
+		c.Send(photo)
+		return c.Send(helpers.SquadRoarMsg(c))
 
-		//case strings.Contains(str, "data"):
-		//	return c.Send("test")
+	case strings.Contains(str, "honey"):
+		if c.Chat().ID == chats.AliyaChat {
+			c.Chat().ID = chats.AdminChat
+			c.Send(helpers.HoneyMsg(c))
+			c.Chat().ID = chats.AliyaChat
+			c.Send(helpers.HoneyDone())
+		}
+		if c.Chat().ID == chats.AdminChat {
+			c.Chat().ID = chats.AliyaChat
+			c.Send(helpers.HoneyMsg(c))
+			c.Chat().ID = chats.AdminChat
+			c.Send(helpers.HoneyDone())
+		}
 	}
+	return nil
+}
+
+func (s Service) AdminCall(c tele.Context) error {
+	if c.Chat().ID != chats.AdminChat {
+		return nil
+	}
+
+	if strings.Contains(c.Text(), "/sq") {
+		c.Chat().ID = chats.SquadChat
+		c.Send(strings.Replace(c.Text(), "/sq", "", 1))
+		return nil
+	}
+
+	if strings.Contains(c.Text(), "/al") {
+		c.Chat().ID = chats.AliyaChat
+		c.Send(strings.Replace(c.Text(), "/al", "", 1))
+		return nil
+	}
+
 	return nil
 }

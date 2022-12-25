@@ -9,9 +9,10 @@ import (
 func InitHandlers(b *tele.Bot, srv *service.Service) {
 	b.Use(middleware.Logger())
 
-	b.Handle("праздник", srv.Holidays)
-	b.Handle("курс", srv.CurrencyAll)
 	b.Handle("тест", srv.Test)
 	b.Handle("бот", srv.InlineCall)
+
 	b.Handle(tele.OnCallback, srv.HandleCallback)
+	b.Handle(tele.OnText, srv.AdminCall)
+
 }
