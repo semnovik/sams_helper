@@ -1,6 +1,7 @@
 package scrap
 
 import (
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"strconv"
@@ -91,4 +92,36 @@ func StealAli(url string) (float64, error) {
 	}
 
 	return floatAli, err
+}
+
+func StealListOfHolidays(url string) (string, error) {
+	response, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+
+	readerHolidays, err := goquery.NewDocumentFromReader(response.Body)
+	if err != nil {
+		return "", err
+	}
+	defer response.Body.Close()
+
+	headerLocator := readerHolidays.Find(".holidays-list")
+	header, err := headerLocator.Prev().Html()
+	if err != nil {
+		return "", err
+	}
+
+	rawHolidays := strings.Split(headerLocator.Children().Text(), "\n")
+
+	var listFinal []string
+	for _, v := range rawHolidays {
+		v = strings.TrimSpace(v)
+		if v != "" {
+			listFinal = append(listFinal, v)
+		}
+	}
+	holidays := strings.Join(listFinal, "\n")
+
+	return fmt.Sprintf("🎊🎊🎊" + "\n" + header + "\n\n" + holidays), nil
 }

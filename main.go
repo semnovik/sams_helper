@@ -1,14 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"gopkg.in/telebot.v3/middleware"
 	"log"
 	"os"
-	"sams_helper/helpers"
-	"sams_helper/iternal/side_methods"
-	"sams_helper/scrap"
-	"strings"
+	"sams_helper/iternal/handler"
+	"sams_helper/iternal/service"
 	"time"
 
 	tele "gopkg.in/telebot.v3"
@@ -25,54 +21,12 @@ func main() {
 		log.Fatal(err)
 		return
 	}
-	b.Use(middleware.Logger())
 
-	b.Handle(tele.OnText, handleCustom)
-	b.Handle("праздник", holidays)
-	b.Handle("курс", currencyAll)
-
-	b.Handle("тест", test)
+	srv := service.NewService("sema_help_me_pls")
+	handler.InitHandlers(b, srv)
 
 	b.Start()
 }
 
-//TODO Сделать нормально
-
-func handleCustom(c tele.Context) error {
-
-	var (
-		_    = c.Sender()
-		text = c.Text()
-	)
-	if strings.Contains(text, "привет") {
-		return c.Send("принял")
-	}
-	return c.Send("не принял")
-}
-
-func holidays(c tele.Context) error {
-	response, err := side_methods.GetListOfHolidays()
-	if err != nil {
-		return helpers.SendErrorOnBackend(c, err)
-	}
-	return c.Send(response)
-}
-
-func currencyAll(c tele.Context) error {
-	response, err := side_methods.AllCurrencies()
-	if err != nil {
-		return helpers.SendErrorOnBackend(c, err)
-	}
-	return c.Send(response)
-}
-
-func test(c tele.Context) error {
-	usd, err := scrap.StealUSD("https://quote.rbc.ru/ticker/59111")
-	kzt, err := scrap.StealKZT("https://www.google.com/finance/quote/RUB-KZT")
-	euro, err := scrap.StealEuro("https://quote.rbc.ru/ticker/59090")
-	ali, err := scrap.StealAli("https://alicoup.ru/currency/")
-	if err != nil {
-		return c.Send(err)
-	}
-	return c.Send(fmt.Sprintf("%.3f\n%.3f\n%.3f\n%v\n%.3f", usd, kzt, euro, err, ali))
-}
+// TODO: единая точка входа для url
+// TODO: конфигурация переменных окружения

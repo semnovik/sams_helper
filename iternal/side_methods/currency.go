@@ -10,14 +10,17 @@ func AllCurrencies() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	euro, err := scrap.StealEuro("https://quote.rbc.ru/ticker/59090")
 	if err != nil {
 		return "", err
 	}
+
 	kzt, err := scrap.StealKZT("https://www.google.com/finance/quote/RUB-KZT")
 	if err != nil {
 		return "", err
 	}
+
 	ali, err := scrap.StealAli("https://alicoup.ru/currency/")
 	if err != nil {
 		return "", err
